@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.lisijietech</groupId>
+	<artifactId>generator-service</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<properties>
+		<!-- 文件拷贝时的编码 -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<!-- 文件拷贝时的编码 -->
+		<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+		<!-- 已经在maven的setting文件中全局设置了，可以不用 -->
+		<!-- <java.version>1.8</java.version> -->
+		
+		<mysql.version>8.0.19</mysql.version>
+		<mybatis-plus.version>3.3.1</mybatis-plus.version>
+		<mpg.version>3.3.1</mpg.version>
+		<freemarker.version>2.3.30</freemarker.version>
+		<slf4j-api.version>1.7.30</slf4j-api.version>
+		<logback-core.version>1.2.3</logback-core.version>
+		<logback-classic.version>1.2.3</logback-classic.version>
+		<spring-context.version>5.2.4.RELEASE</spring-context.version>
+		<spring-tx.version>5.2.4.RELEASE</spring-tx.version>
+		<spring-web.version>5.2.4.RELEASE</spring-web.version>
+		
+		<maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
+		<maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
+	</properties>
+
+	<dependencies>
+		<!-- 数据库相关 -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>${mysql.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		
+		<!-- mybatis-plus -->
+		<!-- <dependency>
+			<groupId>com.baomidou</groupId>
+			<artifactId>mybatis-plus-boot-starter</artifactId>
+			<version>${mybatis-plus.version}</version>
+		</dependency> -->
+		
+		<!-- mybatis-plus的代码生成工具，与mybatis-plus分离了，可单独使用 -->
+		<dependency>
+			<groupId>com.baomidou</groupId>
+			<artifactId>mybatis-plus-generator</artifactId>
+			<version>${mpg.version}</version>
+		</dependency>
+		
+		<!-- freemarker模板引擎 -->
+		<dependency>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+			<version>${freemarker.version}</version>
+		</dependency>
+		
+		<!-- 简单日志门面 -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j-api.version}</version>
+		</dependency>
+		
+		<!-- logback日志基础模块 -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>${logback-core.version}</version>
+		</dependency>
+		
+		<!-- logback日志log4j改良模块 -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback-classic.version}</version>
+		</dependency>
+		
+		<!-- generator-service生成的代码中有spring的上下文bean注解，事务注解和web注解依赖。在ide中，没有spring相关依赖包，会报错。
+			spring相关依赖只是参与编译测试时使用，在generator-service中不是必要的。
+		 -->
+		 <dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring-context.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>${spring-tx.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring-web.version}</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<!-- 
+			这里是要做可执行jar(可执行jar在windows系统中双击也能执行)。
+			https://blog.csdn.net/daerzei/article/details/82883472。
+			https://blog.csdn.net/weixin_34092370/article/details/92069968。
+			https://blog.csdn.net/xiaojiesu/article/details/51871705。
+			https://blog.csdn.net/qq_32736999/article/details/93395246。
+			https://www.jianshu.com/p/7f0eaf96baf2。
+			自定打包maven-assembly-plugin，把相关generator配置，jar包打进zip压缩包中。达到解压，修改配置就能用的目的。
+			
+			以后，往深处优化。
+			可执行jar包，需要本机安装jre才能执行。以后可以考虑生成exe，cmd等项目。
+			https://blog.csdn.net/qq_39362996/article/details/82907320 网站有简单实现。
+			但以后可以考虑其原理，以及jni技术，以及jni包括的Invocation api，软件提供商在原生程序中内嵌Java虚拟机。
+			这样就可以不用安装jdk，jre，直接嵌入在本机原生程序中，直接使用，如exe程序。
+		 -->
+		<plugins>
+			<!-- https://blog.csdn.net/daerzei/article/details/82883472 -->
+			<!-- https://www.cnblogs.com/jinjiyese153/p/9374015.html -->
+			<!-- https://blog.csdn.net/u011712163/article/details/89705295 -->
+			<!-- https://blog.csdn.net/sinat_37729104/article/details/103118911 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${maven-jar-plugin.version}</version>
+				<!-- 对要打的jar包进行配置 -->
+				<configuration>
+					<archive>
+						<!-- 生成的jar中，不包含pom.xml和pom.properties这两个文件 -->
+						<addMavenDescriptor>false</addMavenDescriptor>
+						<manifest>
+							<!-- 指定入口类 -->
+							<mainClass>com.lisijietech.generator.starter.GeneratorServiceApplication</mainClass>
+							<!-- 是否把第三方jar路径放到manifest的classpath中 -->
+							<addClasspath>true</addClasspath>
+							<!-- 生成的manifest中的classpath的前缀，依赖jar包的路径 -->
+							<classpathPrefix>lib/</classpathPrefix>
+						</manifest>
+					</archive>
+					<!-- 
+						过滤掉不希望包含在jar中的文件。排除不需要的文件夹，或文件。路径是在jar包内部的路径。
+						由于.zip和.md等文件是项目跟类路径，不在有class输出路径配置的src源目录中，不会打包进jar包中，不需要排除。
+					 -->
+					<!-- <excludes>
+						<exclude>*.zip</exclude>
+						<exclude>*.xml</exclude>
+					</excludes> -->
+				</configuration>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>${maven-assembly-plugin.version}</version>
+				<!-- 项目装配进行配置 -->
+				<configuration>
+					<!-- 指定assembly插件的配置文件所在位置 -->
+					<descriptors>
+						<descriptor>package.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<!-- 将组装绑定到maven生命周期的哪一阶段。这样运行mvn package就会一起执行mvn assembly:single -->
+						<phase>package</phase>
+						<goals>
+							<!-- 指定assembly插件的打包方式 -->
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
