@@ -25,7 +25,7 @@
 		<logback-classic.version>1.2.3</logback-classic.version>
 		<spring-context.version>5.2.4.RELEASE</spring-context.version>
 		<spring-tx.version>5.2.4.RELEASE</spring-tx.version>
-		<spring-web.version>5.2.4.RELEASE</spring-web.version>
+		<spring-web.version>6.0.0</spring-web.version>
 		
 		<maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
 		<maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
